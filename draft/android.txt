@@ -1,0 +1,3 @@
+title=Leaves
+author=Me
+orientation=portrait

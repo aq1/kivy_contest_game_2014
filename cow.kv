@@ -1,0 +1,40 @@
+#:kivy 1.7.0
+
+<Cow>:
+    canvas:
+        Color:
+            rgba: self.r, 1, 1, self.alpha
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: self.source
+
+<UFO>:
+    canvas:
+        Color:
+            rgba: 1, 1, 1, self.alpha
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: self.source
+
+<StartMenu>:
+    Label:
+        center: self.parent.center[0], 5 * self.parent.height / 6
+        text: self.parent.rules_text
+        halign: 'center'
+        valign: 'middle'
+        font_name: 'fonts/Billy.ttf'
+        font_size: self.parent.height // 20
+    Button:
+        center: self.parent.center[0], 3 * self.parent.height / 5
+        text: 'Normal'
+        on_release: self.parent.select_difficulty(1)
+    Button:
+        center: self.parent.center[0], 2 * self.parent.height / 5
+        text: 'Harder'
+        on_release: self.parent.select_difficulty(2)
+    Button:
+        center: self.parent.center[0], 1 * self.parent.height / 5
+        text: 'Realy Hard'
+        on_release: self.parent.select_difficulty(3)
