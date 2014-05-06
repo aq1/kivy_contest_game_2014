@@ -1,0 +1,9 @@
+#:kivy 1.7.0
+
+<GeographyWindow>:
+    canvas.after:
+        Color:
+            rgb: 0, 0, 0
+        Rectangle:
+            pos: self.pos
+            size: self.width, self.bottom_border

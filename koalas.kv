@@ -1,0 +1,118 @@
+#:kivy 1.7.0
+
+<KoalasMainWidget>:
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, self.alpha
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'img/koalas/background.png'
+        Color:
+            rgba: 0.2, 0.2, 0.4, 0.5 * self.alpha
+        Rectangle:
+            pos: self.x, self.height - self.border_height
+            size: self.width, self.border_height
+    canvas:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.width / 2 - self.liana_width / 2, self.liana_y
+            size: self.liana_width, self.height
+            source: 'img/koalas/Steble_01.png'
+    # canvas.after:
+    Label:
+        pos: self.parent.right - 80, self.parent.top - 1.8 * self.parent.border_height
+        text: str(self.parent.points)
+        font_name: 'fonts/Billy.ttf'
+        font_size: self.parent.height / 10
+        color: 1, 1, 1, self.parent.alpha
+
+<Leaf>:
+    canvas:
+        # Color:
+            # rgba: 0.7, 0.4, 0.6, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: self.source
+    Label:
+        center: self.parent.center
+        text: self.parent.expression
+        font_name: 'fonts/Billy.ttf'
+        font_size: self.parent.height // 1.5
+        bold: True
+
+
+<KoalaPaw>:
+    canvas:
+        # Color:
+        #   hsv: 0.2, 0.5, 0.7
+        Rectangle:
+            pos: self.pos
+            size: self.size
+<StartMenu>:
+    canvas:
+        Color:
+            rgba: 0.1, 0.1, 0.1, 0.5
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    Label:
+        center: self.parent.center[0], 6 * self.parent.height / 8
+        text: self.parent.text
+        halign: 'center'
+        valign: 'middle'
+        font_name: 'fonts/Billy.ttf'
+        font_size: self.parent.height // 20
+    Button:
+        center: self.parent.center[0], 4 * self.parent.height / 8
+        text: 'Normal'
+        on_release: self.parent.select_difficulty(1)
+        size: self.parent.width // 3, self.parent.height // 10
+        background_normal: 'img/buttons/button_01.png'
+        background_down: 'img/buttons/button_02.png'
+        halign: 'center'
+        # background_normal: 'img/koalas/buttons/button_01.png'
+    Button:
+        center: self.parent.center[0], 3 * self.parent.height / 8
+        text: 'Harder'
+        on_release: self.parent.select_difficulty(2)
+        size: self.parent.width // 3, self.parent.height // 10
+        background_normal: 'img/buttons/button_01.png'
+        background_down: 'img/buttons/button_02.png'
+        halign: 'center'
+    Button:
+        center: self.parent.center[0], 2 * self.parent.height / 8
+        text: 'Really Hard. Like... Really'
+        on_release: self.parent.select_difficulty(3)
+        size: self.parent.width // 3, self.parent.height // 10
+        background_normal: 'img/buttons/button_01.png'
+        background_down: 'img/buttons/button_02.png'
+        halign: 'center'
+    Button:
+        center: self.parent.center[0], 1 * self.parent.height / 8
+        text: 'Menu'
+        on_release: self.parent.exit()
+        size: self.parent.width // 3, self.parent.height // 10
+        background_normal: 'img/buttons/button_01.png'
+        background_down: 'img/buttons/button_02.png'
+        halign: 'center'
+# <RestartMenu>:
+#   Label:
+#       text: self.parent.label_text
+#       center: self.parent.center[0], 4 * self.parent.height / 5
+#       font_name: 'fonts/Billy.ttf'
+#       font_size: self.parent.height // 7
+#   Button:
+#       center: self.parent.center[0], 3 * self.parent.height / 5
+#       text: 'Restart'
+#       font_name: 'fonts/Billy.ttf'
+#       font_size: self.parent.height // 7
+#       on_release: self.parent.parent.start_game()
+#   Button:
+#       center: self.parent.center[0], 2 * self.parent.height / 5
+#       text: 'Menu'
+#       font_name: 'fonts/Billy.ttf'
+#       font_size: self.parent.height // 7
+#       on_release: self.parent.parent.exit()
