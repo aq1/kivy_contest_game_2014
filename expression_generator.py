@@ -18,7 +18,6 @@ class BinaryExpression():
         self.right = right
 
     def get_result(self):
-        #     collision = False, False
         return eval('%s' % self)
 
     def get_expression_str(self, result):
@@ -134,6 +133,7 @@ def get_expression(truth, difficulty):
 
 
 if __name__ == '__main__':
+    #tests
     print get_expression(True, EASY)
     print get_expression(False, EASY)
     print get_expression(True, MEDIUM)

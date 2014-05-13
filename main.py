@@ -81,7 +81,6 @@ if not PLATFORM == 'android':
 class Circle(Widget):
 
     color = ListProperty([0, 0, 0])
-    # color = NumericProperty()
 
     def __init__(self, x, y, max_width):
         super(Circle, self).__init__()
@@ -89,12 +88,10 @@ class Circle(Widget):
         self.size = [0, 0]
         self.color = [random.random()] + [
             random.uniform(0.7, 1) for _ in range(2)]
-        # print self.color
         self.max_width = max_width
         self.x_y = [x, y]
         self.pos = [x, y]
         Clock.schedule_interval(self.increase_size, FPS)
-        # print 'added', self.pos, self.size, self.color
 
     def increase_size(self, timing=None):
         if self.width >= self.max_width:
@@ -122,8 +119,6 @@ class Circle(Widget):
         self.parent.remove_widget(self)
 
 
-# import multiprocessing
-
 class MainWindow(Widget):
 
     buttons_offset = NumericProperty(Window.height / 6)
@@ -137,9 +132,6 @@ class MainWindow(Widget):
         self.koalas_sound = None
         self.cows_sound = None
         self.geo_sound = None
-        # threads = threading.Thread(target=self.__load_geo_map)
-        # threads.start()
-        # Since i can't use threads with OpenGl...
 
         self.sound = SoundLoader.load('sound/main.ogg')
         self.sound.loop = True
@@ -150,9 +142,6 @@ class MainWindow(Widget):
             with open(f, 'r') as kv_file:
                 Builder.load_string(kv_file.read())
 
-        # thread.start_new_thread(self.__load_geo_map, ())
-        # queue = Queue.Queue()
-        # Clock.schedule_interval(self.__get_map, 0.1)
         thread.start_new_thread(self.__load_data, ())
 
     def display_menu(self):
@@ -218,25 +207,10 @@ class MainWindow(Widget):
         self.loading_label.text += '.'
 
     def __load_data(self, *args):
-        # print 'start load of colors_dict'
         self.koalas_sound = SoundLoader.load('sound/koalas.ogg')
         self.cows_sound = SoundLoader.load('sound/cows.ogg')
         with open('colors_dict.pkl', 'rb') as c:
             self.colors_dict = pickle.load(c)
-        # print 'finished'
-
-    # def __load_geo_countries(self):
-    #     self.countries = dict()
-    #     with open('countries', 'r') as c:
-    #         for line in c.readlines():
-    #             key, val, zone = line.split(': ')
-    #             v = [int(d) for d in val[1:-1].split(', ')]
-    #             self.countries[key] = (tuple(v), zone[:-1])
-    #     print len(self.countries)
-
-    # def __load_geo_map(self, queue):
-    #     print 'start loading map'
-    #     pass
 
     def add_circle(self, timing=None):
         # print self.geo_map
@@ -316,8 +290,6 @@ class MainWindow(Widget):
             anim = Animation(x=x, y=y, d=duration)
             anim.start(child)
         Clock.schedule_once(lambda t: self.run(application), duration)
-
-        # Clock.schedule_once(self.unschedule_all, 1)
 
     @staticmethod
     def hsv_to_rgb(h, s=100, v=100):

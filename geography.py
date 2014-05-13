@@ -19,7 +19,6 @@ from kivy.core.window import Window
 from kivy.core.audio import SoundLoader
 from kivy.animation import Animation
 from kivy.properties import StringProperty
-# from kivy.metrics import Metrics
 
 try:
     import Image as Img
@@ -33,10 +32,8 @@ except ImportError:
     Window.size = [600, 700]
 
 
-# MAP = 'img/geography/map_raw.png'
 MAP = 'img/geography/world_map.png'
 COUNTRY = 'img/geography/working_image.png'
-# FONT = 'fonts/Cicle_Fina.ttf'
 FONT = 'fonts/Billy.ttf'
 FONT_SIZE = Window.height // 12 - 20
 BOTTOM_BORDER = Window.height / 4
@@ -67,10 +64,6 @@ ZONES = {'N. America': (-5, 320, 1),
          'S. Africa': (840, 815, 1),
          'FarEast': (1300, 640, 1),
          }
-
-
-# for x in ZONES.keys():
-#     ZONES[x] = [2 * c for c in ZONES[x]]
 
 
 def select_decorator(function):
@@ -144,11 +137,7 @@ class TopBorder(BoxLayout):
         self.pos = 0, Window.height - Window.height // 17
         self.size = Window.width, Window.height // 17
         self.orientation = 'horizontal'
-        # self.anchor_x = 'right'
-        # self.anchor_y = 'center'
         self.padding, self.spacing = 2, 0
-        # self.rows = 1
-        # self.cols = LIFE + 2
         self.index = 0
         self.life_list = []
         self.prepare()
@@ -157,17 +146,13 @@ class TopBorder(BoxLayout):
         for life in range(LIFE):
             image = Image(
                 source=('img/life_%s.png' % (random.randint(1, 2))),
-                # x = 1.1 * life * (self.height // 17),
-                # y = self.height - self.height // 17,
                 mipmap=True,
                 allow_stretch = True,
-                # size = (self.height // 17, self.height // 17),
                 size_hint=(.1, 1),
             )
             self.life_list.append(image)
             self.add_widget(image)
         self.display_points()
-        # Clock.schedule_interval(self.display_lifes, 0.2)
 
     def display_lifes(self, timing=None):
         if self.index == LIFE:
@@ -187,15 +172,9 @@ class TopBorder(BoxLayout):
     def display_points(self, timing=None):
         print - FONT_SIZE, self.right - FONT_SIZE
         self.points = Label(text='0',
-                            # x=self.right - 3 * FONT_SIZE,
-                            # y=self.top - 10 * FONT_SIZE,
-                            # x=0,
-                            # y=650,
                             font_name=FONT,
                             font_size=FONT_SIZE + 10,
-                            # color=(1, 0, 1, 1))
                             )
-        # self.add_widget(Label(text='123'))
         self.add_widget(Label(text=''))
         self.add_widget(self.points)
 
@@ -209,35 +188,19 @@ class Map(Image):
         super(Map, self).__init__()
         self.init_size = [2250, 1117]
         self.allow_stretch = True
-        # self.mipmap = True
         self.size = self.init_size
         self.init_pos = [- self.width / 2, BOTTOM_BORDER]
         self.pos = self.init_pos
-        # self.pos = 0, 0
-        # print BOTTOM_BORDER, self.pos, self.init_pos,
-        # self.get_norm_image_size(), self.size
         self.nocache = True
         print 'Finished loading image in class'
 
-    # def on_touch_down(self, touch):
-    #     if touch.is_double_tap:
-    #         self.reset_source()
-    #     else:
-    #         self.ask_question()
-            # print dp(100)
-            # self.fill_country(random.choice(self.countries.keys()))
-
     def ask_question(self, country, color, zone):
-        # country = self.select_country()
-        # color, zone = self.parent.countries[country]
         x, y, scale = ZONES[zone]
         x = -x
         y = self.init_pos[1] - ((self.init_size[1] - y) - BOTTOM_BORDER)
         anim = Animation(x=x, y=y, d=0.5)
-        # anim.bind(on_complete=self.s)
         anim.start(self)
         self.fill_country_with_color(country, RED)
-        # print x, y, country, zone
 
     def s(self, *args):
         print self.pos
@@ -321,10 +284,8 @@ class GControls(GridLayout):
         self.country = country
         self.zone = zone
         answers = self.get_answers()
-        # return
 
         for name in answers:
-            # print name
             button = Button(text=name,
                             background_normal='img/buttons/button_05.png',
                             background_down='img/buttons/button_04.png',
@@ -353,7 +314,6 @@ class GeographyMainWindow(Widget):
             return
 
         Window.clearcolor = [x / 255.0 for x in (132, 180, 228)] + [1]
-        # Window.clearcolor = [0, 1, 0, 1]
         self.points = 0
         self.life = LIFE
         self.time = 30 * TIME
@@ -368,9 +328,6 @@ class GeographyMainWindow(Widget):
             with open('colors_dict.pkl', 'rb') as c:
                 self.colors_dict = pickle.load(c)
 
-        # if countries:
-        #     self.countries = countries
-        # else:
         self.countries = dict()
         with open('countries', 'r') as c:
             for line in c.readlines():
@@ -378,10 +335,6 @@ class GeographyMainWindow(Widget):
                 v = [int(d) for d in val[1:-1].split(', ')]
                 self.countries[key] = (tuple(v), zone[:-1])
 
-        # if map_:
-            # print 'GOT MAP!'
-            # self.map = map_
-        # else:
         if sound:
             self.sound = sound
         else:
@@ -479,17 +432,12 @@ class GeographyMainWindow(Widget):
 
     def select_country(self, *args):
         self.start_countdown()
-        # self.add_widget(ProgressBar(max=self.time))
         country = self.random_country()
-        # country = 'Greece'
-        # country, val = random.choice(self.countries.items())
         color, zone = self.countries[country]
         self.controls.display_buttons(country, zone)
         self.map.ask_question(country, color, zone)
-        # print country, zone
 
     def correct_answer(self):
-        # print 'RIGHT'
         Clock.unschedule(self.decrease_time)
         self.points += 10
         self.top_border.set_points(self.points)
@@ -497,7 +445,6 @@ class GeographyMainWindow(Widget):
         Clock.schedule_once(self.select_country, 1)
 
     def wrong_answer(self):
-        # print 'WRONG'
         Clock.unschedule(self.decrease_time)
         self.life -= 1
         self.top_border.remove_life()
@@ -515,16 +462,11 @@ class GeographyMainWindow(Widget):
         self.remove_widget(self.top_border)
         self.add_widget(GMenu(self.points))
 
-    # def on_touch_down(self, touch):
-    #     print 'touch'
-    #     self.select_country()
-
 
 class GeographyApp(App):
 
     def build(self):
         map_widget = GeographyMainWindow()
-        # map_widget.size = [1350, 670]
         return map_widget
 
 
@@ -539,4 +481,3 @@ def test():
 
 if __name__ == '__main__':
     GeographyApp().run()
-    # print dir(Map)
