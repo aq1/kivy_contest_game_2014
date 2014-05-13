@@ -1,7 +1,7 @@
 This is app for kivy contest#2.
 http://kivy.org/#contest
 
-Since theme is education i decided to create an app that helps with ariphmetics and geography. 
+Since theme is education i decided to create an app that helps with arithmetics and geography. 
 
 Music and sounds are from
 http://incompetech.com
