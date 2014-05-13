@@ -472,7 +472,10 @@ class Controls(Widget):
             self.value += obj.text
         except AttributeError:
             self.value += obj
-        self.parent.check_answer(self.value)
+        try:
+            self.parent.check_answer(self.value)
+        except AttributeError:
+            pass
 
     def remove_symbol(self):
         self.value = self.value[:-1]
