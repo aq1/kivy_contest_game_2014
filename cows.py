@@ -6,6 +6,7 @@ import re
 
 from kivy.app import App
 from kivy.core.window import Window
+from kivy.core.audio import SoundLoader
 from kivy.clock import Clock
 
 from kivy.uix.widget import Widget
@@ -51,8 +52,7 @@ TOP_BORDER = Window.height - 5 * UFO_HEIGHT
 TIMESLICE = 0.3
 LABEL_WIDTH = 5
 INVITE_TEXT = '''Oh no! UFO steal our COWS!
-Please help them by solving ariphmetical examples!\n
-Double Tap for Menu\n'''
+Please help them \nby solving arithmetic examples!\n'''
 
 if not android:
     INVITE_TEXT += '''On PC: Use keyboard digits to write,
@@ -88,6 +88,10 @@ class CowStartMenu(Widget):
         elif points < 100:
             self.text = "It's okay."
 
+        self.sound = SoundLoader.load('sound/menu.ogg')
+        self.sound.volume = 0.2
+        self.sound.play()
+
         self.text += ' %s points.\nAgain?' % points
 
     def select_difficulty(self, difficulty):
@@ -96,8 +100,9 @@ class CowStartMenu(Widget):
 
     def exit(self):
         try:
-            self.parent.parent.remove_widget(self)
             self.parent.parent.display_menu()
+            self.parent.sound.stop()
+            self.parent.parent.remove_widget(self)
         except AttributeError:
             pass
 
@@ -326,11 +331,17 @@ class UFO(Image):
     source = StringProperty('')
     # alpha = NumericProperty(1)
 
-    def __init__(self, cows, difficulty):
+    def __init__(self, cows, difficulty, e_sound, s_sound):
 
         super(UFO, self).__init__()
         self.size = [UFO_WIDTH, UFO_HEIGHT]
         self.pos = [Window.center[0], Window.height]
+        # self.engine_sound = SoundLoader.load('sound/ufo_engine.ogg')
+        # self.shot_sound = SoundLoader.load('sound/ufo_shot.ogg')
+        self.engine_sound = e_sound
+        self.shot_sound = s_sound
+        self.engine_sound.volume = 0.5
+        self.engine_sound.loop = True
         self.source = 'img/cows/ufo_03.png'
 
         self.cows = cows
@@ -359,6 +370,7 @@ class UFO(Image):
             self.speed = 1.5 * UFO_SPEED
         else:
             self.speed = 3 * UFO_SPEED
+        self.engine_sound.play()
 
         # self.speed = UFO_SPEED
 
@@ -383,6 +395,8 @@ class UFO(Image):
         self.vel_x = self.direction * speed
 
     def __move(self, *args):
+        offset = Window.width / 120
+
         if self.x <= -self.width:
             self.x = 3
             self.__chose_victim()
@@ -393,8 +407,8 @@ class UFO(Image):
             self.__chose_victim()
             # self.direction *= -1
 
-        if (self.center[0] >= self.victim.center[0] - 5 and
-            self.center[0] <= self.victim.center[0] + 5 and not
+        if (self.center[0] >= self.victim.center[0] - offset and
+            self.center[0] <= self.victim.center[0] + offset and not
                 self.victim.is_flying):
 
             self.shoot()
@@ -402,6 +416,7 @@ class UFO(Image):
         self.pos = [self.x + self.vel_x, self.y]
 
     def shoot(self):
+        self.shot_sound.play()
         self.victim.get_kidnapped()
         self.vel_x = 0
         # time = random.uniform(
@@ -411,6 +426,7 @@ class UFO(Image):
         self.__chose_victim()
 
     def game_over(self):
+        self.engine_sound.stop()
         Clock.unschedule(self.__move)
         Clock.unschedule(self.__chose_victim)
 
@@ -480,8 +496,20 @@ class CowsMainWidget(Widget):
     #     for cow in self.cows:
     #         cow.start_falling()
 
-    def __init__(self):
+    def __init__(self, sound=None):
         super(CowsMainWidget, self).__init__()
+
+        self.engine_sound = SoundLoader.load('sound/ufo_engine.ogg')
+        self.shot_sound = SoundLoader.load('sound/ufo_shot.ogg')
+        self.pop_sound = SoundLoader.load('sound/pop.ogg')
+
+        if sound:
+            self.sound = sound
+        else:
+            self.sound = SoundLoader.load('sound/cows.ogg')
+
+        self.sound.loop = True
+        self.sound.play()
         self.size = Window.size
         self.cows = [None for _ in range(4)]
         self.life = LIFE
@@ -542,7 +570,7 @@ class CowsMainWidget(Widget):
 
         for life in range(LIFE):
             image = Image(
-                source=('img/cows/life.png'),
+                source=('img/life_%s.png' % random.randint(1, 2)),
                 x = 1.1 * life * (self.height // 17),
                 y = self.height - self.height // 17,
                 size = (self.height // 17, self.height // 17),
@@ -554,7 +582,7 @@ class CowsMainWidget(Widget):
             if isinstance(child, UFO):
                 self.remove_widget(child)
         self.difficulty = difficulty
-        self.add_widget(UFO(self.cows, self.difficulty))
+        self.add_widget(UFO(self.cows, self.difficulty, self.engine_sound, self.shot_sound))
         self.control_object = Controls()
         self.add_widget(self.control_object)
 
@@ -575,6 +603,8 @@ class CowsMainWidget(Widget):
         for cow in [c for c in self.cows if c]:
             right_answer = cow.check_answer(value)
             if right_answer:
+                if self.pop_sound.status == 'stop':
+                    self.pop_sound.play()
                 self.points += 2 ** self.difficulty
                 # print value, self.cows
                 self.control_object.clear()
@@ -583,6 +613,8 @@ class CowsMainWidget(Widget):
             #     control_object.clear()
 
     def lose_the_cow(self, cow):
+        sound = SoundLoader.load('sound/moo_%s.ogg' % random.randint(0, 2))
+        sound.play()
         self.life -= 1
 
         self.remove_widget(self.life_list[-1])

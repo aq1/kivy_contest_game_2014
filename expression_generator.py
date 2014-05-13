@@ -4,7 +4,7 @@
 import random
 
 OPERATORS = ('+', '-', '*', '/')
-BOOL_OPERATORS = ('<', '>', '=')
+BOOL_OPERATORS = ('<', '>')
 EASY = 1
 MEDIUM = 2
 HARD = 3

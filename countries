@@ -1,0 +1,92 @@
+USA: (255, 42, 0): N. America
+Canada: (255, 0, 0): N. America
+Mexico: (255, 100, 0): C. America
+Guatemala: (255, 255, 0): C. America
+Honduras: (238, 255, 0): C. America
+Greenland: (255, 183, 0): Greenland
+Iceland: (255, 241, 0): Greenland
+Brazil: (212, 255, 0): S. America
+Argentina: (191, 255, 0): S. America
+Chile: (170, 255, 0): S. America
+Paraguay: (149, 255, 0): S. America
+Uruguay: (128, 255, 0): S. America
+Bolivia: (106, 255, 0): S. America
+Peru: (85, 255, 0): S. America
+Ecuador: (64, 255, 0): C. America
+Colombia: (42, 255, 0): C. America
+Venezuela: (21, 255, 0): C. America
+Norway: (255, 0, 205): Europe
+Sweden: (255, 0, 33): Europe
+Finland: (255, 0, 91): Europe
+Estonia: (255, 0, 96): Europe
+Latvia: (255, 0, 101): Europe
+Belarus: (255, 0, 106): Europe
+Poland: (255, 0, 111): Europe
+Ukraine: (255, 0, 120): Europe
+Romania: (255, 0, 125): Europe
+Bulgaria: (255, 0, 130): Europe
+Greece: (255, 0, 135): Europe
+Serbia: (255, 0, 140): Europe
+Italy: (255, 0, 145): Europe
+Slovakia: (255, 0, 150): Europe
+Hungary: (255, 0, 155): Europe
+Czech: (255, 0, 160): Europe
+Austria: (255, 0, 165): Europe
+Germany: (255, 0, 170): Europe
+France: (255, 0, 175): Europe
+Great Britain: (255, 0, 180): Europe
+Ireland: (255, 0, 185): Europe
+France: (255, 0, 190): Europe
+Spain: (255, 0, 195): Europe
+Portugal: (255, 0, 200): Europe
+Turkey: (0, 255, 0): MidEast
+Georgia: (0, 255, 5): MidEast
+Azerbaijan: (0, 255, 10): MidEast
+Iraq: (0, 255, 15): MidEast
+Saudi Arabia: (0, 255, 20): MidEast
+Egypt: (0, 255, 25): N. Africa
+Libiya: (0, 255, 30): N. Africa
+Tunisia: (0, 255, 35): N. Africa
+Algeria: (0, 255, 40): N. Africa
+Morocco: (0, 255, 45): N. Africa
+Western Sahara: (0, 255, 50): N. Africa
+Mauritania: (0, 255, 55): N. Africa
+Mali: (0, 255, 60): N. Africa
+Niger: (0, 255, 65): N. Africa
+Chad: (0, 255, 70): N. Africa
+Sudan: (0, 255, 75): N. Africa
+Etiopia: (0, 255, 80): C. Africa
+Somalia: (0, 255, 85): C. Africa
+Kenya: (0, 255, 90): C. Africa
+Uganda: (0, 255, 95): C. Africa
+Congo: (0, 255, 100): C. Africa
+Gabon: (0, 255, 105): C. Africa
+Nigeria: (0, 255, 110): S. Africa
+Tanzania: (0, 255, 115): S. Africa
+Zambia: (0, 255, 120): S. Africa
+Angola: (0, 255, 125): S. Africa
+Nambia: (0, 255, 130): S. Africa
+Botswana: (0, 255, 135): S. Africa
+South Africa: (0, 255, 140): S. Africa
+Zimbabwe: (0, 255, 145): S. Africa
+Mozambiqe: (0, 255, 150): S. Africa
+Madagaskar: (0, 255, 155): S. Africa
+Iran: (0, 255, 160): MidEast
+Turkmenistan: (0, 255, 165): MidEast
+Uzbekistan: (0, 255, 170): MidEast
+Kazakhstan: (0, 255, 175): MidEast
+Afganistan: (0, 255, 180): MidEast
+Pakistan: (0, 255, 185): FarEast
+India: (0, 255, 190): FarEast
+China: (0, 255, 195): FarEast
+Mongolia: (0, 255, 200): FarEast
+Thailand: (0, 255, 205): FarEast
+Vietnam: (0, 255, 210): FarEast
+Indonesia: (0, 255, 215): Australia
+New Guinea: (0, 255, 220): Australia
+Australia: (0, 255, 225): Australia
+New Zeland: (0, 255, 230): Australia
+Japan: (0, 255, 235): Anime
+Russia: (0, 255, 240): Russia
+S. Korea: (0, 255, 245): Anime
+N. Korea: (0, 255, 250): Anime

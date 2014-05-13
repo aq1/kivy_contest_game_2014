@@ -1,8 +1,43 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+
+'''
+So. This is app made for kivy contest 2014.
+
+It's orientated mostly on kids but i guess adults
+can play it too.
+
+Code by me.
+Art by my friend.
+Music and sounds are from
+http://incompetech.com
+and
+https://www.freesound.org
+
+Tested on:
+Elementary OS (Ubuntu) with python 2 and kivy 1.8.0
+Android 4.4 in QPython.
+
+If you have anything to say to me:
+game.code.die@gmail.com
+I'll be glad if you tell me about bugs and suchlike.
+
+Some notes:
+
+Main menu color changes every time. - Good.
+There one bug in geo app whe running on android. - Bad,
+it gives wrong answer.
+For this moment I don't know why it's happening. Don't get mad.
+'''
+
+
 import random
 import math
+import thread
+# import threading
+import pickle
+# import Queue
 
 import kivy
 kivy.require('1.7.0')
@@ -10,6 +45,7 @@ kivy.require('1.7.0')
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.core.window import Window
+from kivy.core.audio import SoundLoader
 
 from kivy.clock import Clock
 from kivy.lang import Builder
@@ -22,13 +58,10 @@ from kivy.properties import NumericProperty, ListProperty
 
 import cows
 import koalas
-
-try:
-    import android
-except ImportError:
-    Window.size = [600, 800]
+import geography
 
 
+PLATFORM = kivy.platform()
 FPS = 1.0 / 60.0
 FONT = 'fonts/Cicle_Fina.ttf'
 FONT_SIZE = Window.height // 12
@@ -37,6 +70,10 @@ QUANT = Window.width / 600
 COWS = 'Cows'
 KOALAS = 'Koalas'
 GEOGRAPHY = 'Geography'
+
+
+if not PLATFORM == 'android':
+    Window.size = [600, 800]
 
 
 class Circle(Widget):
@@ -83,6 +120,8 @@ class Circle(Widget):
         self.parent.remove_widget(self)
 
 
+# import multiprocessing
+
 class MainWindow(Widget):
 
     buttons_offset = NumericProperty(Window.height / 6)
@@ -91,11 +130,28 @@ class MainWindow(Widget):
         super(MainWindow, self).__init__()
         self.size = Window.size
         self.direction = [0, 0]
+        self.geo_map = None
+        self.colors_dict = None
+        self.koalas_sound = None
+        self.cows_sound = None
+        self.geo_sound = None
+        # threads = threading.Thread(target=self.__load_geo_map)
+        # threads.start()
+        # Since i can't use threads with OpenGl...
+
+        self.sound = SoundLoader.load('sound/main.ogg')
+        self.sound.loop = True
+
         self.display_menu()
 
         for f in ('koalas.kv', 'cows.kv', 'geography.kv'):
             with open(f, 'r') as kv_file:
                 Builder.load_string(kv_file.read())
+
+        # thread.start_new_thread(self.__load_geo_map, ())
+        # queue = Queue.Queue()
+        # Clock.schedule_interval(self.__get_map, 0.1)
+        thread.start_new_thread(self.__load_data, ())
 
     def display_menu(self):
         self.color = self.hsv_to_rgb(random.randint(0, 360)) + (1,)
@@ -113,7 +169,7 @@ class MainWindow(Widget):
         self.add_widget(label)
 
         apps = (GEOGRAPHY, KOALAS, COWS)
-        b_texts = ('Learn Geography', 'Feed Koalas', 'Save Cows')
+        b_texts = ('Learn\nGeography', 'Feed Koalas', 'Save Cows')
 
         for y, text, app in zip(range(1, len(b_texts) + 1), b_texts, apps):
             button = Button(text=text,
@@ -126,14 +182,66 @@ class MainWindow(Widget):
                             markup=True,
                             background_normal='img/buttons/button_01.png',
                             background_down='img/buttons/button_02.png',
+                            border=(0, 0, 0, 0),
                             halign='center',
+                            valign='middle'
                             )
 
             button.on_release = lambda a=app: self.start_application(a)
             self.add_widget(button)
+
+        self.sound.play()
         self.add_circle()
 
+        if self.colors_dict is not None:
+            return
+        self.loading_label = Label(text='Geo app is being loaded',
+                                   center=(Window.width-self.buttons_offset - 10, self.buttons_offset / 2),
+                                   halign='right',
+                                   valign='middle',
+                                   font_name=FONT,
+                                   font_size=30,
+                                   color=self.color,
+                                   markup=True)
+        self.add_widget(self.loading_label)
+        Clock.schedule_interval(self.__add_point_to_loading_label, 0.5)
+
+    # i'm doing this in big hurry. Don't be rush
+    def __add_point_to_loading_label(self, *args):
+        if self.colors_dict is not None:
+            self.remove_widget(self.loading_label)
+            return False
+        if len(self.loading_label.text) >= len('Geo app is being loaded...'):
+            self.loading_label.text = 'Geo app is being loaded'
+        self.loading_label.text += '.'
+
+    def __load_data(self, *args):
+        # print 'start load of colors_dict'
+        self.koalas_sound = SoundLoader.load('sound/koalas.ogg')
+        self.cows_sound = SoundLoader.load('sound/cows.ogg')
+        with open('colors_dict.pkl', 'rb') as c:
+            self.colors_dict = pickle.load(c)
+        # print 'finished'
+
+    # def __load_geo_countries(self):
+    #     self.countries = dict()
+    #     with open('countries', 'r') as c:
+    #         for line in c.readlines():
+    #             key, val, zone = line.split(': ')
+    #             v = [int(d) for d in val[1:-1].split(', ')]
+    #             self.countries[key] = (tuple(v), zone[:-1])
+    #     print len(self.countries)
+
+    # def __load_geo_map(self, queue):
+    #     print 'start loading map'
+    #     pass
+
     def add_circle(self, timing=None):
+        # print self.geo_map
+        if len([c for c in self.children if isinstance(c, Circle)]) > 10:
+            Clock.schedule_once(self.add_circle, 5)
+            return
+
         x = random.randint(0, self.width)
         y = random.randint(0, self.height)
         max_width = random.randint(self.height / 10, self.height / 2)
@@ -150,15 +258,53 @@ class MainWindow(Widget):
                 pass
         self.clear_widgets()
 
+    def __load_cows_app(self, *args):
+        if self.cows_sound is None:
+            return True
+        else:
+            self.clear_widgets()
+            self.add_widget(cows.CowsMainWidget(self.cows_sound))
+            return False
+
+    def __load_koalas_app(self, *args):
+        if self.koalas_sound is None:
+            return True
+        else:
+            self.clear_widgets()
+            self.add_widget(koalas.KoalasMainWidget(self.koalas_sound))
+            return False
+
+    def __load_geo_app(self, *args):
+        if self.colors_dict is None and self.geo_sound is None:
+            return True
+        else:
+            self.clear_widgets()
+            self.add_widget(geography.GeographyMainWindow(self.colors_dict, self.geo_sound))
+            return False
+
     def run(self, application):
         # return
         self.unschedule_all()
+        label = Label(text='Loading',
+                      center=(self.center[0], 4 * self.buttons_offset),
+                      halign='center',
+                      valign='middle',
+                      font_name=FONT,
+                      font_size=FONT_SIZE,
+                      color=self.color,
+                      markup=True)
+        self.add_widget(label)
+
         if application == KOALAS:
-            self.add_widget(koalas.KoalasMainWidget())
+            f = self.__load_koalas_app
         elif application == COWS:
-            self.add_widget(cows.CowsMainWidget())
+            f = self.__load_cows_app
+        elif application == GEOGRAPHY:
+            f = self.__load_geo_app
         else:
             pass
+        Clock.schedule_interval(f, 0.1)
+        self.sound.stop()
 
     def start_application(self, application):
         duration = 0.7

@@ -66,6 +66,16 @@
 #             size: self.size
 #             source: self.source
 
+<CustomButton@Button>:
+    font_name: 'fonts/Billy.ttf'
+    font_size: self.parent.height // 20
+    size: self.parent.width // 3, self.parent.height // 10
+    background_normal: 'img/buttons/button_01.png'
+    background_down: 'img/buttons/button_02.png'
+    border: (0, 0, 0, 0)
+    halign: 'center'
+    valign: 'middle'
+
 <CowStartMenu>:
     canvas:
         Color:
@@ -81,67 +91,41 @@
         font_name: 'fonts/Billy.ttf'
         font_size: self.parent.height // 20
         markup: True
-    Button:
+    CustomButton:
         center: self.parent.center[0], 4 * self.parent.height / 8
         text: 'Easy'
-        on_release: self.parent.select_difficulty(1)
-        size: self.parent.width // 3, self.parent.height // 10
-        background_normal: 'img/buttons/button_01.png'
-        background_down: 'img/buttons/button_02.png'
-        halign: 'center'
-    Button:
+        on_release: self.parent.select_difficulty(1)        
+    CustomButton:
         center: self.parent.center[0], 3 * self.parent.height / 8
         text: 'Normal'
         on_release: self.parent.select_difficulty(2)
-        size: self.parent.width // 3, self.parent.height // 10
-        background_normal: 'img/buttons/button_01.png'
-        background_down: 'img/buttons/button_02.png'
-        halign: 'center'
-    Button:
+    CustomButton:
         center: self.parent.center[0], 2 * self.parent.height / 8
-        text: 'UFO moves really quick!'
+        text: 'UFO moves\nreally quick!'
         on_release: self.parent.select_difficulty(3)
-        size: self.parent.width // 3, self.parent.height // 10
-        background_normal: 'img/buttons/button_01.png'
-        background_down: 'img/buttons/button_02.png'
-        halign: 'center'
-    Button:
+    CustomButton:
         center: self.parent.center[0], 1 * self.parent.height / 8
         text: 'Menu'
         on_release: self.parent.exit()
-        size: self.parent.width // 3, self.parent.height // 10
-        background_normal: 'img/buttons/button_01.png'
-        background_down: 'img/buttons/button_02.png'
-        halign: 'center'
 
 <Controls>:
     Label:
-        # canvas:
-        #     Color:
-        #         rgba: 1, 0.2, 0.1, 0.5
-        #     Rectangle:
-        #         pos: self.pos
-        #         size: self.size
         text: self.parent.value
         center: [self.parent.center[0], self.parent.center[1] + self.parent.button_size]
-        # size: [2 * self.parent.button_size, 2 * self.parent.button_size]
         font_size: self.parent.height // 6
     Button:
         text: ''
-        center: [self.parent.width - 2 * self.parent.button_size, self.parent.center[1] + self.parent.button_size]
+        center: [self.parent.width - 2 * self.parent.button_size - 10, self.parent.center[1] + self.parent.button_size]
         size: [self.parent.button_size, self.parent.button_size]
         on_release: self.parent.remove_symbol()
-        background_normal: 'img/buttons/button_03.png'
-        background_down: 'img/buttons/button_04.png'
+        background_normal: 'img/buttons/back_0.png'
+        background_down: 'img/buttons/back_1.png'
+        border: (0, 0, 0, 0)
     Button:
         text: ''
         center: [self.parent.width - self.parent.button_size, self.parent.center[1] + self.parent.button_size]
         size: [self.parent.button_size, self.parent.button_size]
         on_release: self.parent.clear()
-        background_normal: 'img/buttons/button_03.png'
-        background_down: 'img/buttons/button_04.png'
-
-    # canvas:
-    #     Rectangle:
-    #         size: self.size
-    #         pos: self.pos
+        background_normal: 'img/buttons/close_0.png'
+        background_down: 'img/buttons/close_1.png'
+        border: (0, 0, 0, 0)

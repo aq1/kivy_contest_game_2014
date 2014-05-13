@@ -1,0 +1,34 @@
+[INFO              ] Logger: Record log in /storage/emulated/0/kivy/contest/.kivy/logs/kivy_14-05-07_0.txt
+[WARNING           ] [Config      ] Upgrading configuration in progress.
+[WARNING           ] [Config      ] Older configuration version detected (0 instead of 10)
+[ERROR             ] Error when copying logo directory
+[INFO              ] Kivy v1.8.0
+[INFO              ] Factory: 157 symbols loaded
+[DEBUG             ] Cache: register <kv.lang> with limit=None, timeout=Nones
+[DEBUG             ] Cache: register <kv.image> with limit=None, timeout=60s
+[DEBUG             ] Cache: register <kv.atlas> with limit=None, timeout=Nones
+[WARNING           ] stderr: /data/data/org.kivy.pygame/files/lib/python2.7/site-packages/kivy/core/image/img_pygame.py:12: RuntimeWarning: import cdrom: No module named cdrom
+[WARNING           ] stderr: (ImportError: No module named cdrom)
+[INFO              ] Image: Providers: img_tex, img_dds, img_pygame, img_pil, img_gif 
+[DEBUG             ] Cache: register <kv.texture> with limit=1000, timeout=60s
+[DEBUG             ] Cache: register <kv.shader> with limit=1000, timeout=3600s
+[DEBUG             ] Window: Ignored <egl_rpi> (import error)
+[INFO              ] Window: Provider: pygame(['window_egl_rpi'] ignored)
+[DEBUG             ] WinPygame: Set window to fullscreen mode
+[DEBUG             ] Window: Display driver android
+[DEBUG             ] Window: Actual window size: %dx%d
+[INFO              ] GL: OpenGL version <OpenGL ES 3.0 V@53.0 AU@  (CL@)>
+[INFO              ] GL: OpenGL vendor <Qualcomm>
+[INFO              ] GL: OpenGL renderer <Adreno (TM) 320>
+[INFO              ] GL: OpenGL parsed version: 3, 0
+[INFO              ] GL: Texture max size <4096>
+[INFO              ] GL: Texture max units <16>
+[DEBUG             ] Shader: Fragment compiled successfully
+[DEBUG             ] Shader: Vertex compiled successfully
+[DEBUG             ] ImagePygame: Load </data/data/org.kivy.pygame/files/lib/python2.7/site-packages/kivy/data/glsl/default.png>
+[INFO              ] Support: Android install hooks
+[INFO              ] Window: virtual keyboard not allowed, single mode, not docked
+[INFO              ] Text: Provider: pygame
+[DEBUG             ] Cache: register <kv.loader> with limit=500, timeout=60s
+[INFO              ] Loader: using a thread pool of 2 workers
+[DEBUG             ] App: Loading kv <./main.kv>

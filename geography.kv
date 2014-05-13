@@ -1,9 +1,62 @@
 #:kivy 1.7.0
 
-<GeographyWindow>:
-    canvas.after:
+# <GControls>:
+# 	canvas:
+# 		Rectangle:
+# 			pos: self.pos
+# 			size: self.size
+
+<TopBorder>:
+	canvas:
         Color:
-            rgb: 0, 0, 0
+            rgba: 0.2, 0.2, 0.4, 0.5
         Rectangle:
             pos: self.pos
-            size: self.width, self.bottom_border
+            # size: self.parent.width, self.parent.height // 17
+            size: self.size
+
+# <GeographyMainWindow>:
+# 	canvas:
+# 		Color:
+# 			rgba: 0, 0, 0, 0.5
+# 		Rectangle:
+# 			size: self.width, self.height / 12.0
+# 			pos: 0, self.height / 4.0
+
+<CustomButton@Button>:
+    font_name: 'fonts/Billy.ttf'
+    font_size: self.parent.height // 20
+    size: self.parent.width // 3, self.parent.height // 10
+    background_normal: 'img/buttons/button_01.png'
+    background_down: 'img/buttons/button_02.png'
+    border: (0, 0, 0, 0)
+    halign: 'center'
+    valign: 'middle'
+
+<GMenu>:
+    canvas:
+        Color:
+            rgba: 0.1, 0.1, 0.1, 0.5
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    Label:
+        center: self.parent.center[0], 6 * self.parent.height / 8
+        text: self.parent.text
+        halign: 'center'
+        valign: 'middle'
+        font_name: 'fonts/Billy.ttf'
+        font_size: self.parent.height // 20
+        markup: True
+    CustomButton:
+        center: self.parent.center[0], 4 * self.parent.height / 8
+        text: 'Normal'
+        on_release: self.parent.start(1)       
+    CustomButton:
+        center: self.parent.center[0], 3 * self.parent.height / 8
+        text: 'Hard'
+        on_release: self.parent.start(2)       
+    CustomButton:
+        center: self.parent.center[0], 2 * self.parent.height / 8
+        text: 'Menu'
+        on_release: self.parent.exit()

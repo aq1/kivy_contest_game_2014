@@ -5,12 +5,13 @@ import random
 
 from kivy.app import App
 from kivy.core.window import Window
+from kivy.core.audio import SoundLoader
 from kivy.clock import Clock
 
+from kivy.animation import Animation
 from kivy.uix.widget import Widget
 from kivy.uix.image import Image
 
-from kivy.vector import Vector
 from kivy.properties import NumericProperty, StringProperty
 
 import expression_generator as generator
@@ -34,9 +35,10 @@ BORDER_HEIGHT = Window.height / 18
 LEAF_SIZE = [Window.width / 2.5, Window.height / 8]
 PANDA_SIZE = [LEAF_SIZE[0] / 1.5, LEAF_SIZE[1] / 1.5]
 PANDA_SPEED = 8
-INVITE_TEXT = '''Feed koalas with leafes.
+INVITE_TEXT = '''Feed koalas with leaves.
 But those are strange koalas.
-They only want to eat leaf with Truth written on it.'''
+They only want to eat leaves
+with Truth written on it.'''
 
 
 class StartMenu(Widget):
@@ -62,6 +64,10 @@ class StartMenu(Widget):
             self.text = 'Good! I think they are not hungry anymore'
         elif points < 100:
             self.text = "It's fine. But will they eat better next time?"
+
+        self.sound = SoundLoader.load('sound/menu.ogg')
+        self.sound.volume = 0.2
+        self.sound.play()
         self.text += '\n%s points.\nAgain?' % points
 
     def select_difficulty(self, difficulty):
@@ -70,61 +76,64 @@ class StartMenu(Widget):
 
     def exit(self):
         try:
-            self.parent.parent.remove_widget(self)
             self.parent.parent.display_menu()
+            self.parent.sound.stop()
+            self.parent.parent.remove_widget(self)
         except AttributeError:
             pass
 
 
-class KoalaPaw(Widget):
-
-    '''Takes leaf. Needs leaf coords.
-        For aesthetic purposes only'''
-
-    vel_x = NumericProperty(0)
-    vel_y = NumericProperty(0)
+class KoalaPaw(Image):
 
     def __init__(self, parent):
-
         super(KoalaPaw, self).__init__()
         self.size = PANDA_SIZE
-        self.vel_y = parent.vel_y
-        if parent.pos[0] < Window.size[0] // 2:
-            self.pos = [-self.size[0], parent.pos[1]]
-            self.vel_x = PANDA_SPEED
+        y = parent.pos[1] + Window.height / 50.0
+
+        if parent.pos[0] < Window.width // 2:
+            self.direction = 1
+            self.pos = [-self.size[0], y]
+            # self.vel_x = PANDA_SPEED
         else:
-            self.pos = [Window.width, parent.pos[1]]
-            self.vel_x = -PANDA_SPEED
+            self.direction = -1
+            self.pos = [Window.width, y]
+            self.source = 'img/koalas/%s'
+            # self.vel_x = -PANDA_SPEED
+        self.source = 'img/koalas/%s.png' % self.direction
 
-        self.center[1] = parent.center[1]
+        # self.center[1] = parent.center[1]
 
-        self.move()
-        # Clock.schedule_once(self.change_direction, CHANGE_DIRECTION)
+    def animation(self):
+        if self.direction == 1:
+            x = self.parent.x
+        else:
+            x = self.parent.right + self.parent.width / 4.0
 
-    def change_direction(self, timing=None):
-        self.vel_x *= -1
-        self.parent.vel_x = self.vel_x
+        x -= self.parent.width / 2.0
+        y = self.parent.y - self.parent.height / 2
+        self.anim = Animation(x=x, y=y, d=0.5)
+        self.anim.bind(on_complete=self.reverse_animation)
+        self.anim.start(self)
 
-    def move(self, timing=None):
+    def reverse_animation(self, *args):
+        self.parent.grab()
+        self.source = 'img/koalas/p_%s.png' % self.direction
 
-        if self.x > Window.width or self.right < 0:
-            self.parent.destroy(self)
-            return
+        if self.direction == 1:
+            x = - self.width
+        else:
+            x = Window.width + self.width
 
-        if (self.x >= 0 and self.right < Window.width
-           or self.right <= Window.width and self.x > 0):
-            self.change_direction()
+        anim = Animation(x=x, y=self.parent.y - self.parent.height, d=0.5)
+        anim.start(self)
 
-        self.pos = Vector(self.vel_x, self.vel_y) + self.pos
-        Clock.schedule_once(self.move, FPS)
+    def game_over(self):
+        self.anim.cancel(self)
+        self.parent.remove_widget(self)
 
 
-class Leaf(Widget):
+class Leaf(Image):
 
-    '''A single leaf with expression'''
-
-    vel_x = NumericProperty(0)
-    vel_y = NumericProperty(-LEAF_SPEED)
     expression = StringProperty()
     source = StringProperty('')
 
@@ -133,20 +142,23 @@ class Leaf(Widget):
 
         self.pos = pos
         self.size = size
-        self.truth = True
         self.difficulty = difficulty
-        self.add_expression()
+        self.truth = True
         self.taken = False
 
         if pos[0] < Window.width / 2:
-            self.source = 'Leaf_1_02.png'
+            source = random.choice(('Leaf_1.png', 'Leaf_4.png'))
+            self.left = True
         else:
-            self.source = 'Leaf_2_02.png'
+            source = random.choice(('Leaf_2.png', 'Leaf_3.png'))
+            self.left = False
 
-        self.source = 'img/koalas/' + self.source
+        self.source = 'img/koalas/' + source
+
+        self.add_expression()
+        self.start_animation()
 
     def add_expression(self):
-        '''Expression is taken from generator module.'''
         if random.random() <= 0.5:
             self.truth = True
         else:
@@ -155,51 +167,65 @@ class Leaf(Widget):
         if random.random() <= 0.7:
             expression = generator.get_expression(self.truth, self.difficulty)
         else:
-            expression = generator.get_bool_expression(self.truth, self.difficulty)
+            expression = generator.get_bool_expression(
+                self.truth, self.difficulty)
 
         self.expression = expression
 
-    def move(self):
-        '''If true reaches the bottom players loses life.'''
-        if self.top < 0:
-            if self.truth:
-                self.parent.remove_life()
-            else:
-                self.parent.add_points()
-            self.destroy()
+    def start_animation(self):
+        self.anim = Animation(x=self.x, y=-self.height, d=6)
+        self.anim.bind(on_complete=self.reach_bottom)
+        self.anim.start(self)
 
-        self.pos = Vector(self.vel_x, self.vel_y) + self.pos
+    def reach_bottom(self, *args):
+        if self.truth:
+            self.parent.remove_life()
+        else:
+            self.parent.add_points()
 
-    def move_after_game_ends(self):
-        if self.top < 0:
-            self.destroy()
-
-        self.pos = Vector(self.vel_x, self.vel_y) + self.pos
+        self.destroy()
 
     def eat_leaf(self):
-        '''Remove leaf and if expresison is true add points.'''
         if self.truth:
-            # pass
-
             self.parent.add_points()
-            # self.parent.remove_widget(self)
         else:
             self.parent.remove_life()
 
-        self.add_widget(KoalaPaw(self))
+        koala = KoalaPaw(self)
+        self.add_widget(koala)
+        koala.animation()
 
     def on_touch_down(self, touch):
         if self.collide_point(touch.x, touch.y) and not self.taken:
             self.eat_leaf()
             self.taken = True
 
-    def destroy(self, paw=None):
+    def grab(self, *args):
+        self.anim.cancel(self)
+        if self.left:
+            x = -self.width
+        else:
+            x = Window.width + self.width
 
+        y = self.y - self.height
+        anim = Animation(x=x, y=y, d=0.5)
+        anim.start(self)
+
+    def destroy(self, *args):
+        self.anim.cancel(self)
         try:
-            self.remove_widget(paw)
             self.parent.remove_widget(self)
         except AttributeError:
             pass
+
+    def game_over(self):
+        for child in self.children:
+            if isinstance(child, KoalaPaw):
+                child.game_over()
+
+        anim = Animation(x=self.x, y=-self.height, d=0.5)
+        anim.bind(on_complete=self.destroy)
+        anim.start(self)
 
 
 class KoalasMainWidget(Widget):
@@ -208,22 +234,41 @@ class KoalasMainWidget(Widget):
 
     border_height = NumericProperty(BORDER_HEIGHT)
     liana_width = NumericProperty(0)
-    liana_y = NumericProperty(Window.height)
     alpha = NumericProperty(0)
     points = NumericProperty(0)
     koala_heads_list = []
     index = 0
 
-    def __init__(self):
+    def __init__(self, sound=None):
         super(KoalasMainWidget, self).__init__()
 
         self.size = Window.size
-        self.liana_width = self.width / 15
         self.start_menu = None
         self.points = 0
-        self.__startup_animation()
+        self.liana_width = self.width / 15
+
+        liana = Image(x=self.width / 2 - self.liana_width / 2,
+                      y=self.height,
+                      source='img/koalas/Steble_01.png',
+                      size=(self.liana_width, self.height),
+                      # allow_stretch=True
+                      )
+
+        self.add_widget(liana)
+        anim = Animation(x=liana.x, y=0, d=2)
+        anim.start(liana)
+
+        Clock.schedule_interval(self.__reduce_transparency, 0.05)
         self.add_widget(StartMenu())
 
+        if sound:
+            self.sound = sound
+        else:
+            self.sound = SoundLoader.load('sound/koalas.ogg')
+
+        self.wrong_sound = SoundLoader.load('sound/wrong.ogg')
+        self.sound.loop = True
+        self.sound.play()
         # self.start_game()
 
     def start_game(self, difficulty):
@@ -236,33 +281,14 @@ class KoalasMainWidget(Widget):
         else:
             self.life = 2
 
-        # If it's not the first start:
-        # self.liana_y = Window.height
-        # self.alpha = 0
-
         self.create_lifes_list()
-        # self.__startup_animation()
-
-        # Clock.schedule_once(self.add_leaf, 2)
         self.add_leaf()
-        Clock.schedule_interval(self.update, FPS)
 
     def __reduce_transparency(self, timing=None):
         if self.alpha >= 1:
             return False
 
         self.alpha += 0.05
-
-    def __move_liana(self, timing):
-        if self.liana_y <= 0:
-            return False
-
-        self.liana_y -= 10
-
-    def __startup_animation(self):
-        Clock.schedule_interval(self.__reduce_transparency, 0.05)
-        Clock.schedule_interval(self.__move_liana, FPS)
-        # self.add_leaf()
 
     def create_lifes_list(self):
         for child in self.koala_heads_list:
@@ -287,13 +313,20 @@ class KoalasMainWidget(Widget):
         if self.index == self.life:
             return False
 
-        self.add_widget(self.koala_heads_list[self.index])
+        try:
+            self.add_widget(self.koala_heads_list[self.index])
+        except IndexError:
+            # You're so fast!
+            pass
         self.index += 1
 
     def add_points(self):
+        sound = SoundLoader.load('sound/hm_%s.ogg' % random.randint(0, 2))
+        sound.play()
         self.points += 10 * self.difficulty
 
     def remove_life(self):
+        self.wrong_sound.play()
         self.life -= 1
         if self.life == 0:
             self.game_over()
@@ -303,7 +336,7 @@ class KoalasMainWidget(Widget):
 
     def add_leaf(self, timing=None):
         if random.random() < 0.5:
-            pos = self.center[0] + self.liana_width / 3
+            pos = self.center[0]
         else:
             pos = self.center[0] - LEAF_SIZE[0]
         self.add_widget(
@@ -313,38 +346,16 @@ class KoalasMainWidget(Widget):
 
         Clock.schedule_once(self.add_leaf, 1)
 
-    def update(self, timing):
-        for child in self.children:
-            try:
-                child.move()
-            except AttributeError:
-                pass
-
-    def end_animation(self, timing=None):
-        leaf_moved = False
-        for child in self.children:
-            try:
-                child.move_after_game_ends()
-                leaf_moved = True
-            except AttributeError:
-                pass
-
-        if not leaf_moved:
-            self.start_menu = StartMenu(points=self.points)
-            self.add_widget(self.start_menu)
-            return False
-
     def game_over(self):
         Clock.unschedule(self.add_leaf)
-        Clock.unschedule(self.update)
-
         for child in self.children:
             try:
-                child.vel_y *= 10
+                child.game_over()
             except AttributeError:
                 pass
 
-        Clock.schedule_interval(self.end_animation, FPS)
+        self.start_menu = StartMenu(points=self.points)
+        self.add_widget(self.start_menu)
 
     def exit(self):
         try:
@@ -365,3 +376,143 @@ class KoalasApp(App):
 
 if __name__ == '__main__':
     KoalasApp().run()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# class KoalaPaw(Widget):
+
+#     '''Takes leaf. Needs leaf coords.
+#         For aesthetic purposes only'''
+
+#     vel_x = NumericProperty(0)
+#     vel_y = NumericProperty(0)
+
+#     def __init__(self, parent):
+
+#         super(KoalaPaw, self).__init__()
+#         self.size = PANDA_SIZE
+#         self.vel_y = parent.vel_y
+#         if parent.pos[0] < Window.size[0] // 2:
+#             self.pos = [-self.size[0], parent.pos[1]]
+#             self.vel_x = PANDA_SPEED
+#         else:
+#             self.pos = [Window.width, parent.pos[1]]
+#             self.vel_x = -PANDA_SPEED
+
+#         self.center[1] = parent.center[1]
+
+#         self.move()
+# Clock.schedule_once(self.change_direction, CHANGE_DIRECTION)
+
+#     def change_direction(self, timing=None):
+#         self.vel_x *= -1
+#         self.parent.vel_x = self.vel_x
+
+#     def move(self, timing=None):
+
+#         if self.x > Window.width or self.right < 0:
+#             self.parent.destroy(self)
+#             return
+
+#         if (self.x >= 0 and self.right < Window.width
+#            or self.right <= Window.width and self.x > 0):
+#             self.change_direction()
+
+#         self.pos = Vector(self.vel_x, self.vel_y) + self.pos
+#         Clock.schedule_once(self.move, FPS)
+
+
+
+
+'''class Leaf(Widget):
+
+    #A single leaf with expression
+
+    vel_x = NumericProperty(0)
+    vel_y = NumericProperty(-LEAF_SPEED)
+    expression = StringProperty()
+    source = StringProperty('')
+
+    def __init__(self, pos, size, difficulty):
+        super(Leaf, self).__init__()
+
+        self.pos = pos
+        self.size = size
+        self.truth = True
+        self.difficulty = difficulty
+        self.add_expression()
+        self.taken = False
+
+        if pos[0] < Window.width / 2:
+            self.source = 'Leaf_1_02.png'
+        else:
+            self.source = 'Leaf_2_02.png'
+
+        self.source = 'img/koalas/' + self.source
+
+    def add_expression(self):
+    #'Expression is taken from generator module.
+        if random.random() <= 0.5:
+            self.truth = True
+        else:
+            self.truth = False
+
+        if random.random() <= 0.7:
+            expression = generator.get_expression(self.truth, self.difficulty)
+        else:
+            expression = generator.get_bool_expression(self.truth, self.difficulty)
+
+        self.expression = expression
+
+    def move(self):
+
+        if self.top < 0:
+            if self.truth:
+                self.parent.remove_life()
+            else:
+                self.parent.add_points()
+            self.destroy()
+
+        self.pos = Vector(self.vel_x, self.vel_y) + self.pos
+
+    def move_after_game_ends(self):
+        if self.top < 0:
+            self.destroy()
+
+        self.pos = Vector(self.vel_x, self.vel_y) + self.pos
+
+    def eat_leaf(self):
+
+        if self.truth:
+            # pass
+
+            self.parent.add_points()
+            # self.parent.remove_widget(self)
+        else:
+            self.parent.remove_life()
+
+        self.add_widget(KoalaPaw(self))
+
+    def on_touch_down(self, touch):
+        if self.collide_point(touch.x, touch.y) and not self.taken:
+            self.eat_leaf()
+            self.taken = True
+
+    def destroy(self, paw=None):
+
+        try:
+            self.remove_widget(paw)
+            self.parent.remove_widget(self)
+        except AttributeError:
+            pass'''

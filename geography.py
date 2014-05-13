@@ -3,107 +3,496 @@
 
 
 import random
+import pickle
 
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.image import Image
-from kivy.core.window import Window
-from kivy.animation import Animation
-from kivy.properties import ObjectProperty
+from kivy.uix.button import Button
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.progressbar import ProgressBar
+from kivy.uix.label import Label
+
 from kivy.clock import Clock
+from kivy.core.window import Window
+from kivy.core.audio import SoundLoader
+from kivy.animation import Animation
+from kivy.properties import StringProperty
+# from kivy.metrics import Metrics
+
+try:
+    import Image as Img
+except ImportError:
+    pass
 
 try:
     import android
 except ImportError:
-    Window.size = [500, 600]
+    android = None
+    Window.size = [600, 700]
 
 
-countries = {
-    '001': ('China', (808, 258, 3580, 379)),
-    '002': ('France', (524, 198, 2146, 311)),
-    '003': ('Egypt', (624, 304, 143, 1)),
-    '004': ('Mexico', (44, 330, 1, 1))
-}
-
-
+# MAP = 'img/geography/map_raw.png'
+MAP = 'img/geography/world_map.png'
+COUNTRY = 'img/geography/working_image.png'
+# FONT = 'fonts/Cicle_Fina.ttf'
+FONT = 'fonts/Billy.ttf'
+FONT_SIZE = Window.height // 12 - 20
 BOTTOM_BORDER = Window.height / 4
+
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+
+COLUMN_COUNT = 3
+TIME = 3
+QUANT = 1
+LIFE = 5
+INVITE_TEXT = '''Guess the right country name!
+You've got %s attempts.
+And time is limited!
+You gotta be quick and''' % LIFE
+
+ZONES = {'N. America': (-5, 320, 1),
+         'C. America': (-5, 520, 1),
+         'S. America': (100, 800, 1),
+         'Europe': (730, 270, 3),
+         'Greenland': (380, 300, 1),
+         'MidEast': (920, 380, 1),
+         'Australia': (1500, 970, 1),
+         'Russia': (1060, 315, 1),
+         'Anime': (1410, 480, 1),
+         'N. Africa': (710, 610, 1),
+         'C. Africa': (820, 800, 1),
+         'S. Africa': (840, 815, 1),
+         'FarEast': (1300, 640, 1),
+         }
+
+
+# for x in ZONES.keys():
+#     ZONES[x] = [2 * c for c in ZONES[x]]
+
+
+def select_decorator(function):
+    selected_countries = list()
+    max_random_values = 15
+
+    def decorator(self):
+        result = function(self)
+
+        while result in selected_countries:
+            result = function(self)
+        selected_countries.append(result)
+
+        if len(selected_countries) == max_random_values:
+            del selected_countries[0]
+
+        return result
+
+    return decorator
+
+
+class GMenu(Widget):
+
+    text = StringProperty('Again?')
+
+    def __init__(self, points=0):
+        super(GMenu, self).__init__()
+        self.size = Window.size
+        if points == 0:
+            self.text = INVITE_TEXT
+            self.b_text = 'Start!'
+            return
+        elif points < 100:
+            self.text = '''You play this game 5 minutes per day
+and you will master the game!'''
+        elif points < 200:
+            self.text = 'Cool!'
+        elif points < 300:
+            self.text = 'Impressing.'
+        elif points < 400:
+            self.text = 'Wow. You suprised me.'
+        elif points < 500:
+            self.text = 'This is really big score.'
+        elif points < 600:
+            self.text = "I've teached you everything i know."
+        elif points < 700:
+            self.text = 'Did you really play this game so long?'
+
+        self.text += '\n %s points.' % points
+        self.sound = SoundLoader.load('sound/menu.ogg')
+        self.sound.volume = 0.2
+        self.sound.play()
+
+    def start(self, difficulty):
+        self.parent.start(difficulty)
+        self.parent.remove_widget(self)
+
+    def exit(self):
+        try:
+            self.parent.parent.display_menu()
+            self.parent.sound.stop()
+            self.parent.parent.remove_widget(self)
+        except AttributeError:
+            pass
+
+
+class TopBorder(BoxLayout):
+
+    def __init__(self):
+        super(TopBorder, self).__init__()
+        self.pos = 0, Window.height - Window.height // 17
+        self.size = Window.width, Window.height // 17
+        self.orientation = 'horizontal'
+        # self.anchor_x = 'right'
+        # self.anchor_y = 'center'
+        self.padding, self.spacing = 2, 0
+        # self.rows = 1
+        # self.cols = LIFE + 2
+        self.index = 0
+        self.life_list = []
+        self.prepare()
+
+    def prepare(self):
+        for life in range(LIFE):
+            image = Image(
+                source=('img/life_%s.png' % (random.randint(1, 2))),
+                # x = 1.1 * life * (self.height // 17),
+                # y = self.height - self.height // 17,
+                mipmap=True,
+                allow_stretch = True,
+                # size = (self.height // 17, self.height // 17),
+                size_hint=(.1, 1),
+            )
+            self.life_list.append(image)
+            self.add_widget(image)
+        self.display_points()
+        # Clock.schedule_interval(self.display_lifes, 0.2)
+
+    def display_lifes(self, timing=None):
+        if self.index == LIFE:
+            Clock.schedule_once(self.display_points, 0.2)
+            return False
+
+        self.add_widget(self.life_list[self.index])
+        self.index += 1
+
+    def remove_life(self):
+        self.remove_widget(self.life_list[-1])
+        del self.life_list[-1]
+
+    def set_points(self, points):
+        self.points.text = str(points)
+
+    def display_points(self, timing=None):
+        print - FONT_SIZE, self.right - FONT_SIZE
+        self.points = Label(text='0',
+                            # x=self.right - 3 * FONT_SIZE,
+                            # y=self.top - 10 * FONT_SIZE,
+                            # x=0,
+                            # y=650,
+                            font_name=FONT,
+                            font_size=FONT_SIZE + 10,
+                            # color=(1, 0, 1, 1))
+                            )
+        # self.add_widget(Label(text='123'))
+        self.add_widget(Label(text=''))
+        self.add_widget(self.points)
 
 
 class Map(Image):
 
+    source = StringProperty(MAP)
+
     def __init__(self):
+        print 'Loading image in class'
         super(Map, self).__init__()
-
-        # self.source = 'img/world_map.gif'
-        # width, height = 4500, 2234
-        # print self.width, self.height
-        width, height = 1350, 670
-        self.init_size = width, height
-        self.init_pos = -width / 2, (-height / 2) + BOTTOM_BORDER
-
-        self.pos = self.init_pos
+        self.init_size = [2250, 1117]
+        self.allow_stretch = True
+        # self.mipmap = True
         self.size = self.init_size
-        self.move_to()
-        self.keep_data = True
+        self.init_pos = [- self.width / 2, BOTTOM_BORDER]
+        self.pos = self.init_pos
+        # self.pos = 0, 0
+        # print BOTTOM_BORDER, self.pos, self.init_pos,
+        # self.get_norm_image_size(), self.size
+        self.nocache = True
+        print 'Finished loading image in class'
 
-        # self.country = random.choice(countries.keys())
-        # print countries[country]
+    # def on_touch_down(self, touch):
+    #     if touch.is_double_tap:
+    #         self.reset_source()
+    #     else:
+    #         self.ask_question()
+            # print dp(100)
+            # self.fill_country(random.choice(self.countries.keys()))
 
-        # print self.pos, self.size
-
-    def move_to(self, x=0, y=0):
-
-        self.country = random.choice(countries.keys())
-        self.source = 'img/geography/%s.png' % self.country
-        min_x, min_y, max_x, max_y = countries[self.country][1]
-        x, y, = min_x, min_y
-
+    def ask_question(self, country, color, zone):
+        # country = self.select_country()
+        # color, zone = self.parent.countries[country]
+        x, y, scale = ZONES[zone]
         x = -x
-        y = - (self.height - y) + BOTTOM_BORDER
-        # y = self.y - self.height - y
+        y = self.init_pos[1] - ((self.init_size[1] - y) - BOTTOM_BORDER)
+        anim = Animation(x=x, y=y, d=0.5)
+        # anim.bind(on_complete=self.s)
+        anim.start(self)
+        self.fill_country_with_color(country, RED)
+        # print x, y, country, zone
 
-        animation = Animation(x=x, y=y)
-        #& Animation(size=new_size, duration=2)
-        # animation.bind(on_complete=self.move_to_starting_position)
-        animation.bind(on_complete=self.move_to)
-        animation.start(self)
-        # print self.size
+    def s(self, *args):
+        print self.pos
 
-    def move_to_starting_position(self, *args):
-        x, y = self.init_pos
-        animation = Animation(x=x, y=y, size=self.init_size)
-        animation.bind(on_complete=self.move_to)
-        animation.start(self)
+    def reset_source(self, *args):
+        self.source = MAP
 
-    def p(self, *args):
-        print self.pos, self.size
+    @select_decorator
+    def select_country(self):
+        return random.choice(self.parent.countries.keys())
+
+    def fill_country_with_color(self, country, color):
+        raw_map = Img.open(MAP)
+        raw_data = raw_map.load()
+        country_color = self.parent.countries[country][0]
+        for c in self.parent.colors_dict[country_color]:
+            for x in range(c[1], c[2] + 1):
+                raw_data[x, c[0]] = color
+        raw_map.save(COUNTRY)
+        self.reload()
+        self.source = COUNTRY
+        self.allow_stretch = True
 
 
-class GeographyWindow(Widget):
-
-    world_map = ObjectProperty()
-    bottom_border = BOTTOM_BORDER
+class GControls(GridLayout):
 
     def __init__(self):
-        self.size = Window.size
-        Window.clearcolor = (0.5, 0.7, 0.8, 1)
-        super(GeographyWindow, self).__init__()
-        self.world_map = Map()
-        self.add_widget(self.world_map)
-        # Clock.schedule_once(self.world_map.move_to, 2)
-        # Clock.schedule_once(self.world_map.move_to_starting_position, 5)
+        super(GControls, self).__init__()
+        self.pos = 0, 0
+        self.size = Window.width, BOTTOM_BORDER
+        self.cols = 2
+        self.rows = 3
+        self.padding = 10
+        self.spacing = 2
+        self.country = None
+        self.zone = None
 
-    def on_touch_move(self, t):
-        print t.x, t.y
+    def get_answers(self, count=5):
+        countries = set()
+        selection = [
+            c for c, zone in self.parent.countries.items() if zone[1] == self.zone and c != self.country]
+        if len(selection) < count:
+            map(countries.add, selection)
+            selection = [c for c, zone in self.parent.countries.items() if zone[
+                         1] == 'Europe' and c != self.country]
+
+        while len(countries) < count:
+            countries.add(random.choice(selection))
+
+        countries = list(countries) + [self.country]
+        random.shuffle(countries)
+        return countries
+
+    def check_answer(self, pressed_button):
+        self.unbind()
+        if pressed_button:
+            answer = pressed_button.text
+        else:
+            answer = None
+
+        for child in self.children:
+            if child.text == self.country:
+                child.background_down = 'img/buttons/button_07.png'
+                child.background_normal = 'img/buttons/button_07.png'
+
+        if answer == self.country:
+            self.parent.correct_answer()
+        elif pressed_button:
+            pressed_button.background_down = 'img/buttons/button_06.png'
+            pressed_button.background_normal = 'img/buttons/button_06.png'
+            self.parent.wrong_answer()
+        else:
+            self.parent.wrong_answer()
+
+    def display_buttons(self, country, zone):
+        self.clear_widgets()
+        self.country = country
+        self.zone = zone
+        answers = self.get_answers()
+        # return
+
+        for name in answers:
+            # print name
+            button = Button(text=name,
+                            background_normal='img/buttons/button_05.png',
+                            background_down='img/buttons/button_04.png',
+                            border=(0, 0, 0, 0),
+                            halign='center',
+                            valign='middle',
+                            font_name=FONT,
+                            font_size=FONT_SIZE,
+                            )
+            button.on_release = lambda b=button: self.check_answer(b)
+            self.add_widget(button)
+
+    def unbind(self):
+        for child in self.children:
+            child.on_release = lambda *args: None
+
+
+class GeographyMainWindow(Widget):
+
+    def __init__(self, colors_dict=None, sound=None):
+        super(GeographyMainWindow, self).__init__()
+        Window.clearcolor = [x / 255.0 for x in (132, 180, 228)] + [1]
+        # Window.clearcolor = [0, 1, 0, 1]
+        self.size = Window.size
+        self.points = 0
+        self.life = LIFE
+        self.time = 30 * TIME
+
+        self.correct_sound = SoundLoader.load('sound/correct.ogg')
+        self.wrong_sound = SoundLoader.load('sound/wrong.ogg')
+
+        if colors_dict:
+            print 'GOT COLORS DICT!'
+            self.colors_dict = colors_dict
+        else:
+            with open('colors_dict.pkl', 'rb') as c:
+                self.colors_dict = pickle.load(c)
+
+        # if countries:
+        #     self.countries = countries
+        # else:
+        self.countries = dict()
+        with open('countries', 'r') as c:
+            for line in c.readlines():
+                key, val, zone = line.split(': ')
+                v = [int(d) for d in val[1:-1].split(', ')]
+                self.countries[key] = (tuple(v), zone[:-1])
+
+        # if map_:
+            # print 'GOT MAP!'
+            # self.map = map_
+        # else:
+        if sound:
+            self.sound = sound
+        else:
+            self.sound = SoundLoader.load('sound/geo.ogg')
+
+        self.sound.loop = True
+        self.sound.volume = 0.5
+        self.sound.play()
+        self.map = Map()
+        self.add_widget(self.map)
+        self.add_widget(GMenu())
+
+    def start(self, difficulty):
+        if difficulty == 1:
+            self.play_zones = ['N. America',
+                               'C. America',
+                               'S. America',
+                               'Europe',
+                               'Greenland',
+                               'MidEast',
+                               'Australia',
+                               'Russia',
+                               'Anime',
+                               ]
+        else:
+            self.play_zones = [x for x in ZONES.keys()]
+
+        self.points = 0
+        self.life = LIFE
+        self.controls = GControls()
+        self.bar = ProgressBar(max=self.time, value=self.time)
+        self.bar.pos = 20, BOTTOM_BORDER
+        self.bar.size = Window.width - 40, (Window.height / 12.0)
+        self.top_border = TopBorder()
+
+        self.add_widget(self.controls)
+        self.add_widget(self.bar)
+        self.add_widget(self.top_border)
+        self.select_country()
+
+    @select_decorator
+    def random_country(self):
+        country = random.choice(self.countries.keys())
+        while self.countries[country][1] not in self.play_zones:
+            country = random.choice(self.countries.keys())
+            print country, self.countries[country][1]
+        return country
+
+    def start_countdown(self):
+        self.bar.value = self.time
+        Clock.schedule_interval(self.decrease_time, 1.0 / 30.0)
+
+    def decrease_time(self, timing=None):
+        self.bar.value -= QUANT
+        if self.bar.value <= 0:
+            self.controls.check_answer(None)
+            # self.wrong_answer()
+            self.controls.unbind()
+            return False
+
+    def select_country(self, *args):
+        self.start_countdown()
+        # self.add_widget(ProgressBar(max=self.time))
+        country = self.random_country()
+        # country = 'Greece'
+        # country, val = random.choice(self.countries.items())
+        color, zone = self.countries[country]
+        self.controls.display_buttons(country, zone)
+        self.map.ask_question(country, color, zone)
+        # print country, zone
+
+    def correct_answer(self):
+        # print 'RIGHT'
+        Clock.unschedule(self.decrease_time)
+        self.points += 10
+        self.top_border.set_points(self.points)
+        self.correct_sound.play()
+        Clock.schedule_once(self.select_country, 1)
+
+    def wrong_answer(self):
+        # print 'WRONG'
+        Clock.unschedule(self.decrease_time)
+        self.life -= 1
+        self.top_border.remove_life()
+        self.wrong_sound.play()
+
+        if self.life == 0:
+            Clock.schedule_once(self.game_over, 0.7)
+            return
+
+        Clock.schedule_once(self.select_country, 1)
+
+    def game_over(self, timing):
+        self.remove_widget(self.controls)
+        self.remove_widget(self.bar)
+        self.remove_widget(self.top_border)
+        self.add_widget(GMenu(self.points))
+
+    # def on_touch_down(self, touch):
+    #     print 'touch'
+    #     self.select_country()
 
 
 class GeographyApp(App):
 
     def build(self):
-        geography_window = GeographyWindow()
-        return geography_window
+        map_widget = GeographyMainWindow()
+        # map_widget.size = [1350, 670]
+        return map_widget
+
+
+def test():
+    a = Map()
+    for _ in range(1000):
+        s = set([a.select_country() for x in range(6)])
+        if len(s) != 6:
+            print 'not ok'
+        print s
 
 
 if __name__ == '__main__':
     GeographyApp().run()
-    # print dir(Map())
+    # print dir(Map)
