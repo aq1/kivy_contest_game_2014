@@ -16,16 +16,12 @@
             source: 'img/cows/background/cloud_01.png'
         Rectangle:
             size: self.width, self.height / 3
-            # size: [self.width, self.height - self.height / 4.5]
             pos: [0, self.size[1] // 4.5]
             source: 'img/cows/background/top_background.png'
         Rectangle:
             size: self.size[0], self.size[1] / 4.5
-            # size: [self.width, self.height / 4.5]
-            # pos: [0, self.size[1] // 4.5]
             pos: self.pos
             source: 'img/cows/background/bottom_background.png'
-    # canvas.after:
         Color:
             rgba: 0.2, 0.2, 0.4, 0.5
         Rectangle:
@@ -41,8 +37,6 @@
 
 <Balloon>:
     canvas:
-        # Color:
-            # rgba: 1, 0.2, 0.3, 1
         Rectangle:
             pos: self.pos
             size: self.size
@@ -56,16 +50,6 @@
 
 <Cow>:
     color: 1, 1, 1, self.alpha
-    # mipmap: True
-
-# <UFO>:
-#     canvas:
-#         Color:
-#             rgba: 1, 1, 1, self.alpha
-#         Rectangle:
-#             pos: self.pos
-#             size: self.size
-#             source: self.source
 
 <CustomButton@Button>:
     font_name: 'fonts/Billy.ttf'
