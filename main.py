@@ -15,6 +15,8 @@ http://incompetech.com
 and
 https://www.freesound.org
 
+Fonts also free.
+
 Tested on:
 Elementary OS (Ubuntu) with python 2 and kivy 1.8.0
 Android 4.4 in QPython.
@@ -70,7 +72,7 @@ QUANT = Window.width / 600
 COWS = 'Cows'
 KOALAS = 'Koalas'
 GEOGRAPHY = 'Geography'
-
+LOADING_TEXT = 'Some data is being loaded'
 
 if not PLATFORM == 'android':
     Window.size = [600, 800]
@@ -169,7 +171,7 @@ class MainWindow(Widget):
         self.add_widget(label)
 
         apps = (GEOGRAPHY, KOALAS, COWS)
-        b_texts = ('Learn\nGeography', 'Feed Koalas', 'Save Cows')
+        b_texts = ('Know the\nWorld', 'Feed Koalas', 'Save Cows')
 
         for y, text, app in zip(range(1, len(b_texts) + 1), b_texts, apps):
             button = Button(text=text,
@@ -195,8 +197,8 @@ class MainWindow(Widget):
 
         if self.colors_dict is not None:
             return
-        self.loading_label = Label(text='Geo app is being loaded',
-                                   center=(Window.width-self.buttons_offset - 10, self.buttons_offset / 2),
+        self.loading_label = Label(text=LOADING_TEXT,
+                                   center=(Window.width-self.buttons_offset - 30, self.buttons_offset / 2),
                                    halign='right',
                                    valign='middle',
                                    font_name=FONT,
@@ -211,8 +213,8 @@ class MainWindow(Widget):
         if self.colors_dict is not None:
             self.remove_widget(self.loading_label)
             return False
-        if len(self.loading_label.text) >= len('Geo app is being loaded...'):
-            self.loading_label.text = 'Geo app is being loaded'
+        if len(self.loading_label.text) >= len(LOADING_TEXT + '...'):
+            self.loading_label.text = LOADING_TEXT
         self.loading_label.text += '.'
 
     def __load_data(self, *args):

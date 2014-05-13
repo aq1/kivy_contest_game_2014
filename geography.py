@@ -24,7 +24,7 @@ from kivy.properties import StringProperty
 try:
     import Image as Img
 except ImportError:
-    pass
+    Img = None
 
 try:
     import android
@@ -293,24 +293,28 @@ class GControls(GridLayout):
 
     def check_answer(self, pressed_button):
         self.unbind()
-        if pressed_button:
-            answer = pressed_button.text
-        else:
-            answer = None
+        try:
+            guess = pressed_button.text
+        except AttributeError:
+            guess = None
 
-        for child in self.children:
-            if child.text == self.country:
-                child.background_down = 'img/buttons/button_07.png'
-                child.background_normal = 'img/buttons/button_07.png'
-
-        if answer == self.country:
+        if guess and guess == self.country:
             self.parent.correct_answer()
-        elif pressed_button:
+            pressed_button.background_down = 'img/buttons/button_07.png'
+            pressed_button.background_normal = 'img/buttons/button_07.png'
+            return
+        elif guess and guess != self.country:
             pressed_button.background_down = 'img/buttons/button_06.png'
             pressed_button.background_normal = 'img/buttons/button_06.png'
-            self.parent.wrong_answer()
+            button_number = '07'
         else:
-            self.parent.wrong_answer()
+            button_number = '06'
+
+        self.parent.wrong_answer()
+        for child in self.children:
+            if child.text == self.country:
+                child.background_down = 'img/buttons/button_%s.png' % button_number
+                child.background_normal = 'img/buttons/button_%s.png' % button_number
 
     def display_buttons(self, country, zone):
         self.clear_widgets()
@@ -342,9 +346,14 @@ class GeographyMainWindow(Widget):
 
     def __init__(self, colors_dict=None, sound=None):
         super(GeographyMainWindow, self).__init__()
+        self.size = Window.size
+
+        if not self.__is_correct_import():
+            self.__add_excuse_menu()
+            return
+
         Window.clearcolor = [x / 255.0 for x in (132, 180, 228)] + [1]
         # Window.clearcolor = [0, 1, 0, 1]
-        self.size = Window.size
         self.points = 0
         self.life = LIFE
         self.time = 30 * TIME
@@ -385,6 +394,42 @@ class GeographyMainWindow(Widget):
         self.add_widget(self.map)
         self.add_widget(GMenu())
 
+    def __is_correct_import(self):
+        if Img is None:
+            return False
+        else:
+            return True
+
+    def __add_excuse_menu(self):
+        def exit(*args):
+            try:
+                self.parent.display_menu()
+                self.parent.remove_widget(self)
+            except AttributeError:
+                pass
+
+        label = Label(
+            text='Oh no!\nYou should have "Image" library installed.\nI thought it goes with kivy...',
+            center=Window.center,
+            halign='center',
+            valign='middle',
+            font_name=FONT,
+            font_size=FONT_SIZE,
+            markup=True)
+
+        button = Button(
+            text='Menu',
+            size=(self.width / 1.5, self.height / 7),
+            center=(Window.width / 2.0 - 150, Window.height - 200),
+            font_name=FONT,
+            font_size=FONT_SIZE,
+            background_normal='img/buttons/button_01.png',
+            background_down='img/buttons/button_02.png',
+            border=(0, 0, 0, 0),
+            on_press=exit)
+        self.add_widget(label)
+        self.add_widget(button)
+
     def start(self, difficulty):
         if difficulty == 1:
             self.play_zones = ['N. America',
@@ -392,7 +437,6 @@ class GeographyMainWindow(Widget):
                                'S. America',
                                'Europe',
                                'Greenland',
-                               'MidEast',
                                'Australia',
                                'Russia',
                                'Anime',
