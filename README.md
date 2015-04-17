@@ -16,3 +16,7 @@ Android 4.4 in QPython.
 If you have anything to say to me:
 game.code.die@gmail.com
 I'll be glad if you tell me about bugs and suchlike.
+![alt tag](https://pp.vk.me/c621320/v621320890/225f9/UmC91zagwak.jpg)
+![alt tag](http://url/to/img.png)
+![alt tag](http://url/to/img.png)
+![alt tag](http://url/to/img.png)
