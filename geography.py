@@ -170,7 +170,7 @@ class TopBorder(BoxLayout):
         self.points.text = str(points)
 
     def display_points(self, timing=None):
-        print - FONT_SIZE, self.right - FONT_SIZE
+        print(- FONT_SIZE, self.right - FONT_SIZE)
         self.points = Label(text='0',
                             font_name=FONT,
                             font_size=FONT_SIZE + 10,
@@ -184,7 +184,7 @@ class Map(Image):
     source = StringProperty(MAP)
 
     def __init__(self):
-        print 'Loading image in class'
+        print('Loading image in class')
         super(Map, self).__init__()
         self.init_size = [2250, 1117]
         self.allow_stretch = True
@@ -192,7 +192,7 @@ class Map(Image):
         self.init_pos = [- self.width / 2, BOTTOM_BORDER]
         self.pos = self.init_pos
         self.nocache = True
-        print 'Finished loading image in class'
+        print('Finished loading image in class')
 
     def ask_question(self, country, color, zone):
         x, y, scale = ZONES[zone]
@@ -203,7 +203,7 @@ class Map(Image):
         self.fill_country_with_color(country, RED)
 
     def s(self, *args):
-        print self.pos
+        print(self.pos)
 
     def reset_source(self, *args):
         self.source = MAP
@@ -322,7 +322,7 @@ class GeographyMainWindow(Widget):
         self.wrong_sound = SoundLoader.load('sound/wrong.ogg')
 
         if colors_dict:
-            print 'GOT COLORS DICT!'
+            print('GOT COLORS DICT!')
             self.colors_dict = colors_dict
         else:
             with open('colors_dict.pkl', 'rb') as c:
@@ -415,7 +415,7 @@ class GeographyMainWindow(Widget):
         country = random.choice(self.countries.keys())
         while self.countries[country][1] not in self.play_zones:
             country = random.choice(self.countries.keys())
-            print country, self.countries[country][1]
+            print(country, self.countries[country][1])
         return country
 
     def start_countdown(self):
@@ -475,8 +475,8 @@ def test():
     for _ in range(1000):
         s = set([a.select_country() for x in range(6)])
         if len(s) != 6:
-            print 'not ok'
-        print s
+            print('not ok')
+        print(s)
 
 
 if __name__ == '__main__':

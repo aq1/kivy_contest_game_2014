@@ -134,16 +134,16 @@ def get_expression(truth, difficulty):
 
 if __name__ == '__main__':
     #tests
-    print get_expression(True, EASY)
-    print get_expression(False, EASY)
-    print get_expression(True, MEDIUM)
-    print get_expression(False, MEDIUM)
-    print get_expression(True, HARD)
-    print get_expression(False, HARD)
+    print(get_expression(True, EASY))
+    print(get_expression(False, EASY))
+    print(get_expression(True, MEDIUM))
+    print(get_expression(False, MEDIUM))
+    print(get_expression(True, HARD))
+    print(get_expression(False, HARD))
 
-    print get_bool_expression(True, EASY)
-    print get_bool_expression(False, EASY)
-    print get_bool_expression(True, MEDIUM)
-    print get_bool_expression(False, MEDIUM)
-    print get_bool_expression(True, HARD)
-    print get_bool_expression(False, HARD)
+    print(get_bool_expression(True, EASY))
+    print(get_bool_expression(False, EASY))
+    print(get_bool_expression(True, MEDIUM))
+    print(get_bool_expression(False, MEDIUM))
+    print(get_bool_expression(True, HARD))
+    print(get_bool_expression(False, HARD))

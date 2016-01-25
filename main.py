@@ -36,8 +36,7 @@ For this moment I don't know why it's happening. Don't get mad.
 
 import random
 import math
-import thread
-# import threading
+import threading
 import pickle
 # import Queue
 
@@ -142,7 +141,7 @@ class MainWindow(Widget):
             with open(f, 'r') as kv_file:
                 Builder.load_string(kv_file.read())
 
-        thread.start_new_thread(self.__load_data, ())
+        threading.Thread(target=self.__load_data).start()
 
     def display_menu(self):
         self.color = self.hsv_to_rgb(random.randint(0, 360)) + (1,)
